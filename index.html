@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GPT Gênio - Chat</title>
+    <link rel="stylesheet" type="text/css" href="themes/metro/easyui.css">
+    <link rel="stylesheet" type="text/css" href="themes/mobile.css">
+    <link rel="stylesheet" type="text/css" href="themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
+  
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="moment.min.js"></script>
+    <script type="text/javascript" src="jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="jquery.easyui.mobile.js"></script>
+    <script type="text/javascript" src="scripts.js"></script>
+
+</head>
+<body>
+  <div class="easyui-navpanel">
+    <header class="m-header">
+        <div class="m-toolbar">
+            <div class="m-title" style="color:#fff;font-size:20px;font-family: 'Amigavenezia';">GPT Gênio - Chat</div>
+            <div class="m-right">
+                <div class="easyui-menubutton" data-options="menu:'#mm',iconCls:'icon-menu'">
+                    <span class="icon-menu" style="color:#fff;font-size:20px;"></span>
+                </div>
+                <div id="mm" class="easyui-menu">
+                    <div data-options="iconCls:'icon-settings'">Configurações</div>
+                    <div data-options="iconCls:'icon-context'">Contexto</div>
+                    <div class="menu-sep"></div>
+                    <div data-options="iconCls:'icon-privacy'">Privacidade</div>
+                    <div data-options="iconCls:'icon-terms'">Termos</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="easyui-panel" style="height:100%;overflow:auto">
+
+    </div>
+    <footer style="padding:2px 3px">
+        <input class="easyui-searchbox" id="input-message" style="width:100%;height:32px;" data-options="prompt:'Digite algo aqui'">
+    </footer>
+
+	<div id="config-dialog" class="easyui-dialog" title="Configurações" data-options="closed:true,modal:true, buttons: '#config-toolbar'" style="width:400px;height:300px;padding:10px;">
+	    <!-- Adicione o conteúdo das configurações aqui -->
+	    <div style="margin-bottom:10px;">
+	        <label for="token">Token:</label>
+	        <input id="token" class="easyui-textbox" style="width:100%">
+	    </div>
+	    <div style="margin-bottom:10px;">
+	        <label for="temperature">Temperature:</label>
+	        <input id="temperature" class="easyui-slider" value='0.7' style="width:100%" data-options="min:0.0,max:1.0,step:0.01,showTip:true,tipFormatter:function(value){return value;}">
+	    </div>
+	    <div style="margin-bottom:10px;">
+	        <label for="model">Modelo:</label>
+	        <select id="model" class="easyui-combobox" style="width:100%">
+	            <option value="gpt-3.5-turbo">GPT-3.5-turbo</option>
+	            <option value="gpt-4">GPT-4</option>
+	        </select>
+	    </div>
+	</div>
+
+	<div id="config-toolbar" style="padding:2px 4px;">
+	    <a href="javascript:void(0)" class="easyui-linkbutton" plain="true" data-target-dialog="config-dialog" data-action="save" iconCls="icon-save">Salvar</a>
+	    <a href="javascript:void(0)" class="easyui-linkbutton" plain="true" data-target-dialog="config-dialog" data-action="close" iconCls="icon-cancel">Fechar</a>
+	</div>
+
+
+
+	<!-- Adicione esta div de ferramentas para o diálogo de contexto -->
+	<div id="context-toolbar" style="padding:2px 4px;">
+	    <a href="javascript:void(0)" class="easyui-linkbutton" plain="true" data-target-dialog="context-dialog" data-action="save" iconCls="icon-save">Salvar</a>
+	    <a href="javascript:void(0)" class="easyui-linkbutton" plain="true" data-target-dialog="context-dialog" data-action="close" iconCls="icon-cancel">Fechar</a>
+	</div>
+
+	<!-- Modifique a linha do diálogo de contexto para incluir os botões -->
+	<div id="context-dialog" class="easyui-dialog" title="Contexto" data-options="closed:true,modal:true, buttons: '#context-toolbar'" style="width:400px;height:300px;padding:10px;">
+	    <!-- Adicione o conteúdo do contexto aqui -->
+	    <input id="context" class="easyui-textbox" multiline="true" style="width:100%;height:100%">
+	</div>
+
+
+	<div id="privacy-dialog" class="easyui-dialog" title="Privacidade" data-options="closed:true,modal:true" style="width:400px;height:300px;padding:10px;">
+	    <!-- Adicione o conteúdo de privacidade aqui -->
+	    <button id="close-privacy-button" style="position:absolute; bottom:10px; right:10px;">Fechar</button>
+	</div>
+
+	<div id="terms-dialog" class="easyui-dialog" title="Termos" data-options="closed:true,modal:true" style="width:400px;height:300px;padding:10px;">
+	    <!-- Adicione o conteúdo dos termos aqui -->
+	    <button id="close-terms-button" style="position:absolute; bottom:10px; right:10px;">Fechar</button>
+	</div>
+
+
+</div>
+    <script>
+
+// Adicione esta função para salvar o contexto no localStorage
+function saveContext() {
+    var context = $('#context').textbox('getValue');
+    localStorage.setItem('gptGenioContext', context);
+}
+
+$(function() {
+    // Atribuir a função ao item de menu "Configurações"
+    $('.easyui-menu .icon-settings').parent().on('click', function() {
+        $('#config-dialog').dialog('open');
+    });
+
+    // Funções para salvar e fechar os diálogos
+    $('.easyui-linkbutton').on('click', function() {
+        var targetDialog = $(this).data('target-dialog');
+        var action = $(this).data('action');
+
+        if (targetDialog && action) {
+            if (action === 'save') {
+                // Adicione o código para salvar as configurações aqui
+            }
+
+            $('#' + targetDialog).dialog('close');
+        }
+    });
+
+    // Função para abrir o diálogo de contexto
+    function openContextDialog() {
+        $('#context-dialog').dialog('open');
+    }
+
+    // Atribuir a função ao item de menu "Contexto"
+    $('.easyui-menu .icon-context').parent().on('click', openContextDialog);
+
+    $('#close-context-button').on('click', function(){
+    	$('#context-dialog').dialog('close');
+    });
+
+
+    // Função para abrir o diálogo de privacidade
+    function openPrivacyDialog() {
+        $('#privacy-dialog').dialog('open');
+    }
+
+    // Atribuir a função ao item de menu "Privacidade"
+    $('.easyui-menu .icon-privacy').parent().on('click', openPrivacyDialog);
+
+    // Função para abrir o diálogo de termos
+    function openTermsDialog() {
+        $('#terms-dialog').dialog('open');
+    }
+
+    // Atribuir a função ao item de menu "Termos"
+    $('.easyui-menu .icon-terms').parent().on('click', openTermsDialog);
+
+    // Carregar o contexto salvo no localStorage (se houver)
+    var savedContext = localStorage.getItem('gptGenioContext');
+    if (savedContext) {
+        $('#context').textbox('setValue', savedContext);
+    }
+
+    // Funções para salvar e fechar os diálogos
+    $('.easyui-linkbutton').on('click', function() {
+        var targetDialog = $(this).data('target-dialog');
+        var action = $(this).data('action');
+
+        if (targetDialog && action) {
+            if (action === 'save') {
+                if (targetDialog === 'config-dialog') {
+                    // Adicione o código para salvar as configurações aqui
+                } else if (targetDialog === 'context-dialog') {
+                    saveContext();
+                }
+            }
+
+            $('#' + targetDialog).dialog('close');
+        }
+    });
+
+});
+
+
+    </script>
+
+</body>
+</html>
+

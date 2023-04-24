@@ -1,0 +1,58 @@
+/* Atualiza as cores e a fonte */
+body {
+font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+font-size: 14px;
+color: #333;
+}
+.m-header {
+background-color: #2b5797;
+color: #fff;
+}
+.m-toolbar {
+background-color: #2b5797;
+color: #fff;
+}
+.m-title {
+font-size: 1.5em;
+font-weight: bold;
+margin: 0 10px;
+}
+.easyui-linkbutton {
+background-color: #357ae8;
+border-color: #357ae8;
+color: #fff;
+}
+.easyui-menu {
+background-color: #fff;
+border-color: #ccc;
+}
+.easyui-menu div {
+    color: #333;
+}
+/* Novo estilo para a exibição de mensagens */
+.message {
+display: flex;
+margin: 10px;
+}
+.message .avatar {
+width: 50px;
+height: 50px;
+background-color: #ccc;
+border-radius: 50%;
+margin-right: 10px;
+}
+.message .content {
+flex: 1;
+background-color: #f5f5f5;
+padding: 10px;
+border-radius: 10px;
+}
+.message .content p {
+margin: 0;
+font-size: 1em;
+}
+.message .content .meta {
+margin-top: 5px;
+font-size: 0.8em;
+color: #999;
+}
